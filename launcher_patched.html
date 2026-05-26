@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html style="width:100%;height:100%;background-color:black;">
+<head>
+    <meta charset="UTF-8" />
+    <title>EaglercraftX 1.17 Modular - PATCHED</title>
+    <script type="text/javascript">
+        "use strict";
+
+        // 1. Globale Konfiguration direkt setzen
+        window.eaglercraftXOpts = {
+            container: "game_frame",
+            worldsDB: "worlds",
+            assetsURI: "assets.epw",
+	    langURI: "assets.epw", 
+            localesURI: "",
+            relays: [
+                { addr: "wss://relay.deev.is/", comment: "lax1dude relay #1", primary: false },
+                { addr: "wss://relay.lax1dude.net/", comment: "lax1dude relay #2", primary: true },
+                { addr: "wss://relay.shhnowisnottheti.me/", comment: "ayunami relay #1", primary: false }
+            ]
+        };
+
+        // 2. Loader-Kontext explizit vorbereiten, BEVOR Skripte geladen werden
+        window.addEventListener("load", async () => {
+            const epwResponse = await fetch("assets.epw");
+            const epwBuffer = await epwResponse.arrayBuffer();
+
+            // Kontext strikt setzen
+            window.__eaglercraftXLoaderContextPre = {
+                rootElement: document.getElementById("game_frame"),
+                eaglercraftXOpts: window.eaglercraftXOpts,
+                theEPWFileBuffer: epwBuffer,
+                loaderWASMURL: "bootstrap.wasm", // Pfad zur Loader-Binary
+                splashURL: "" 
+            };
+
+            // Skripte laden
+            const cacheBust = Date.now().toString();
+            const s1 = document.createElement("script");
+            s1.src = "bootstrap.js?v=" + cacheBust;
+            document.head.appendChild(s1);
+
+            s1.onload = () => {
+                const s2 = document.createElement("script");
+                s2.src = "client.js?v=" + cacheBust;
+                document.head.appendChild(s2);
+            };
+        });
+    </script>
+</head>
+<body style="margin:0px;width:100%;height:100%;overflow:hidden;background-color:black;">
+    <div id="game_frame" style="width:100%;height:100%;"></div>
+</body>
+</html>
